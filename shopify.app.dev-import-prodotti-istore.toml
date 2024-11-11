@@ -1,0 +1,29 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "3415f480361def1cf020d4ed594fdeef"
+name = "Dev Import Prodotti iStore"
+handle = "dev-import-prodotti-istore"
+application_url = "https://currently-unauthorized-integrating-delivery.trycloudflare.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "istoredevelopment.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_orders,read_products,write_inventory,write_orders,write_products"
+
+[auth]
+redirect_urls = [
+  "https://currently-unauthorized-integrating-delivery.trycloudflare.com/auth/callback",
+  "https://currently-unauthorized-integrating-delivery.trycloudflare.com/auth/shopify/callback",
+  "https://currently-unauthorized-integrating-delivery.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-07"
+
+[pos]
+embedded = false
