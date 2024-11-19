@@ -662,13 +662,14 @@ async function setMetafields(product, prodottoTrovaUsati, correlati) {
 //logica per il prezzo di dei prodotti di ivan
 function creaMaggiorazione(price) {
   // Definiamo le soglie per le varie categorie di prezzo e le relative maggiorazioni
-  const thresholds = [
-    { min: 150, max: 299, rate: 1.22 },
-    { min: 300, max: 499, rate: 1.2 },
-    { min: 500, max: 999, rate: 1.17 },
-    { min: 1000, max: Infinity, rate: 1.16 },
-  ];
 
+  const thresholds = [
+    { min: 150, max: 299, rate: 1.24 },
+    { min: 300, max: 499, rate: 1.22 },
+    { min: 500, max: 999, rate: 1.19 },
+    { min: 1000, max: Infinity, rate: 1.18 },
+  ];
+  
   // Troviamo la categoria di prezzo corrispondente all'importo fornito
   const category = thresholds.find(
     ({ min, max }) => price >= min && price <= max

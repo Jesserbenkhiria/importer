@@ -6,7 +6,7 @@ import serveStatic from "serve-static";
 import shopify from "./service/shopify.js";
 import privateRouter from "./route/import-route.js";
 import shopifyRouter from "./route/shopify-route.js";
-import autoImport from "./service/autoImport.js";
+import autoImport, { updateLastWeekOrdersTags } from "./service/autoImport.js";
 // import autoImport from "./service/helpers/cronTask/autoImport.js";
 // @ts-ignore
 const PORT = parseInt(process.env.BACKEND_PORT || process.env.PORT, 10);
@@ -18,6 +18,7 @@ const STATIC_PATH =
 
 const app = express();
 autoImport();
+updateLastWeekOrdersTags()
 app.use(shopifyRouter)
 app.use(privateRouter)
 
