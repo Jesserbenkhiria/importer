@@ -108,20 +108,20 @@ export function ProductsCard() {
           onAction: handlePopulate,
           loading: isLoading,
         }}
-         secondaryFooterActions={[
-            {
-              content: "Aggiorna Ordini",
-              onAction: handleUpdateOrders,
-              loading: isLoading,
-            },
-          ]}
-        // secondaryFooterActions={[
-        //   {
-        //     content: "get Amazon",
-        //     onAction: getAmazon,
-        //     loading: isLoading,
-        //   },
-        // ]}
+        //  secondaryFooterActions={[
+        //     {
+        //       content: "Aggiorna Ordini",
+        //       onAction: handleUpdateOrders,
+        //       loading: isLoading,
+        //     },
+        //   ]}
+        secondaryFooterActions={[
+          {
+            content: "get Amazon",
+            onAction: getAmazon,
+            loading: isLoading,
+          },
+        ]}
       >
         <TextContainer spacing="loose">
           <p>
