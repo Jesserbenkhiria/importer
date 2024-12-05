@@ -29,7 +29,6 @@ const importController = {
         );
       } while (shopify.api.rest.Product.NEXT_PAGE_INFO);
       let product = articles.flat(1);
-      console.log("all prodiuct",product.length);
       
       for (let i = 0; i < product.length; i++) {
         if (product[i].status === "active") {
@@ -139,11 +138,11 @@ const importController = {
        
           if (idsCUInOrder.length > 0) {
             console.log("Posting data to TrovaUsati for CU products:", idsCUInOrder);
-            await postDataTrovaUsati(idsCUInOrder, "CU");
+            // await postDataTrovaUsati(idsCUInOrder, "CU");
           }
           if (idsISTInOrder.length > 0) {
             console.log("Posting data to TrovaUsati for IST products:", idsISTInOrder);
-             await postDataTrovaUsati(idsISTInOrder, "IST");
+            //  await postDataTrovaUsati(idsISTInOrder, "IST");
           }
      
           

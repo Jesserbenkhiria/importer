@@ -1,48 +1,10 @@
-import { gtinRepository } from "./repository/gtinRepository.js";
 import shopify from "./shopify.js";
 import fetch from "node-fetch";
+import { exportProductsToCSV } from "./utils/ExportProducts.js";
+import logger from "./utils/logger.js";
+import { handleGtin } from "./utils/gtinRepository.js";
+// import { handleGtin } from "./utils/gtinRepository.js";
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-// Define `__dirname` for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Define the log file path
-const logFilePath = path.join(__dirname, "app.log");
-
-// Function to write log messages to file
-function logToFile(message) {
-  const timestamp = new Date().toISOString();
-  const formattedMessage = `[${timestamp}] ${message}\n`;
-
-  // Append log message to the file
-  fs.appendFile(logFilePath, formattedMessage, (err) => {
-    if (err) {
-      console.error("Error writing to log file:", err);
-    }
-  });
-}
-const originalConsoleLog = console.log;
-console.log = (message, ...optionalParams) => {
-  originalConsoleLog(message, ...optionalParams); // Log to the console
-  logToFile(message); // Log to the file
-  if (optionalParams.length > 0) {
-    logToFile(optionalParams.join(" "));
-  }
-};
-
-// Override console.error
-const originalConsoleError = console.error;
-console.error = (message, ...optionalParams) => {
-  originalConsoleError(message, ...optionalParams); // Log to the console
-  logToFile(`ERROR: ${message}`); // Log to the file with "ERROR" prefix
-  if (optionalParams.length > 0) {
-    logToFile(optionalParams.join(" "));
-  }
-};
 export default async function productCreator(session) {
   console.log("Inizio");
   try {
@@ -59,7 +21,8 @@ export default async function productCreator(session) {
       "CU",
       prodottiShopifyInStore
     );
-    // await updateAllProducts(session);
+    await exportProductsToCSV(prodottiShopifyInStore);
+    await updateAllProducts(session);
     console.log("Fine");
   } catch (error) {
     console.error("Errore durante la creazione del prodotto:", error);
@@ -77,39 +40,45 @@ async function getAllProductsInStore(session) {
       })
     );
   } while (shopify.api.rest.Product.NEXT_PAGE_INFO);
-
-  // Log the beginning of the articles array
-  // console.log("Articles Preview:", JSON.stringify(articles[0]));
-
   return articles.flat(1);
 }
 
-// async function updateProductTagsIfNecessary(product, session) {
-//   if (
-//     typeof product.tags === "string" &&
-//     product.tags.includes("COME NUOVO - KM0")
-//   ) {
-//     if (product.variants[0].option2 === "NUOVO") {
-//       product.variants[0].option2 = "COME NUOVO - KM0";
-//     }
-//     await product.save({update:true})
-//   }
-// }
-// async function updateAllProducts(session) {
-//   try {
-//     // Get all products in the store
-//     const products = await getAllProductsInStore(session);
+async function updateProductTagsIfNecessary(product) {
+  // product.variants[0].barcode = "000000"
+  const barcode = await handleGtin(
+    product.title,
+    product.options[0].values[0]
+  );
 
-//     // Iterate over each product and update tags if necessary
-//     for (const product of products) {
-//       await updateProductTagsIfNecessary(product, session);
-//     }
+  product.variants[0].barcode = barcode;
+  await product.save({
+    update: true,
+  });
+}
 
-//     console.log("All products processed.");
-//   } catch (error) {
-//     console.log("Error while updating products:", error);
-//   }
-// }
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function updateAllProducts(session) {
+  try {
+    const products = await getAllProductsInStore(session);
+    for (let i = 0; i < products.length; i++) {
+      const product = products[i];
+      await updateProductTagsIfNecessary(product, session);
+
+      // Log progress for the first 3 products
+      if (i < 3) {
+        console.log(`Product ${i + 1} processed.`);
+      }
+
+      // Introduce a delay between each call (e.g., 1 second)
+      await delay(1000); // Delay of 1000ms (1 second)
+    }
+  } catch (error) {
+    console.log("Error while updating products:", error);
+  }
+}
 
 async function importTrovaUsati(
   session,
@@ -498,7 +467,7 @@ async function createProduct(session, prodottoTrovaUsati, tag) {
       price: prezzo,
       compare_at_price: comparato,
       inventory_quantity: 1,
-      barcode: await gtinRepository.getByHandleandOption1Value(
+      barcode: await handleGtin(
         prodottoTrovaUsati.attributes.model,
         prodottoTrovaUsati.attributes.color
       ),
@@ -564,8 +533,6 @@ async function updateProductPrice(
     const product = allInStore.find(
       (product) => product.id.toString() === shopifyId.toString()
     );
-    console.log(product.tags);
-
     // if (product.tags.includes("NUOVO")) {
     //   // Split the string into an array using a separator (assuming tags are separated by commas)
     //   let tagsArray = product.tags.split(",").map(tag => tag.trim());
@@ -669,7 +636,7 @@ function creaMaggiorazione(price) {
     { min: 500, max: 999, rate: 1.19 },
     { min: 1000, max: Infinity, rate: 1.18 },
   ];
-  
+
   // Troviamo la categoria di prezzo corrispondente all'importo fornito
   const category = thresholds.find(
     ({ min, max }) => price >= min && price <= max
@@ -704,7 +671,6 @@ async function getMapProductInStore(prodottiShopifyInStore, tag) {
       } else {
         inStoreActive++;
       }
-      console.log(prodottoShopify.tags);
       if (prodottoShopify.tags.includes("{")) {
         MapProductInstore.push({
           idTrovaUsati: prodottoShopify.tags.split("{")[1].split("}")[0],

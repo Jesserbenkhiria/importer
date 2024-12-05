@@ -1,29 +1,37 @@
-import { gtinRepository } from "./repository/gtinRepository.js";
 import shopify from "./shopify.js";
-import fetch from "node-fetch";
 
+// Update products with the "ImportAZ" tag to set their location
 export default async function amazonProducts(session) {
-  console.log("Inizio");
+  console.log("Start process to update product locations");
   try {
-    console.log("getting prodcucts start ");
-    const prodcuts = await getAllProductsAmazon(session);
-    let location = await getLocationIdByName(session, "Magazzino Amazon");
-    console.log("the location ", location);
+    // Retrieve all products with the "ImportAZ" tag
+    const products = await getAllProductsAmazon(session);
+    console.log(products);
 
-    for (const product of prodcuts) {
-      const inventoryItemId = product.variants[0]?.inventory_item_id; // Get inventory item ID from the product variants
+    // Retrieve location ID for "Magazzino Amazon"
+    const location = await getLocationIdByName(session, "Magazzino Amazon");
+    if (!location) {
+      console.error("Location 'Magazzino Amazon' not found.");
+      return;
+    }
+
+    console.log("Updating product locations...");
+    for (const product of products) {
+      const inventoryItemId = product.variants[0]?.inventory_item_id;
+
       if (inventoryItemId) {
-        await updateProductLocation(session, inventoryItemId, location);
+        await updateProductLocation(session, inventoryItemId, location.id);
       } else {
-        console.error("Inventory item ID not found for product:", product);
+        console.error(`Inventory item ID not found for product: ${product.id}`);
       }
     }
-    return prodcuts;
+    console.log("Product locations updated successfully!");
   } catch (error) {
-    console.error("Errore durante la creazione del prodotto :", error);
+    console.error("Error during the process:", error);
   }
 }
 
+// Function to retrieve all products with the "ImportAZ" tag
 async function getAllProductsAmazon(session) {
   let articles = [];
   do {
@@ -35,68 +43,58 @@ async function getAllProductsAmazon(session) {
       })
     );
   } while (shopify.api.rest.Product.NEXT_PAGE_INFO);
-  const filteredArticles = articles
+  return articles
     .flat(1)
     .filter((product) => product.tags.includes("ImportAZ"));
-  return filteredArticles;
 }
-async function updateProductLocation(session, inventory_item_id, location) {
-  // console.log(inventory_item_id);
-  if (location && inventory_item_id) {
-    const inventoryLevel = new shopify.api.rest.InventoryLevel({ session });
-    let retryCount = 0;
 
-    // If the location ID is different from the one with the lowest ID
-    if (location.locationByName !== location.locationWithLowestId) {
-      while (retryCount < 5) {
-        // Limit to 5 retries
-        try {
-          await inventoryLevel.set({
-            body: {
-              location_id: location.locationByName,
-              inventory_item_id: inventory_item_id,
-              available: 1,
-            },
-          });
-
-          // Delete the inventory level at the location with the lowest ID
-          await shopify.api.rest.InventoryLevel.delete({
-            session: session,
-            inventory_item_id: inventory_item_id,
-            location_id: location.locationWithLowestId,
-          });
-          break; // Exit the retry loop on success
-        } catch (error) {
-          if (error.code === 429) {
-            // Rate limit error
-            const retryAfter =
-              parseInt(error.response.headers["retry-after"]) ||
-              Math.pow(2, retryCount) * 1000;
-            console.warn(
-              `Rate limit exceeded. Retrying after ${retryAfter}ms...`
-            );
-            await delay(retryAfter); // Wait for the specified time before retrying
-            retryCount++;
-          } else {
-            console.error("Error updating product location:", error);
-            break; // Exit on other errors
-          }
-        }
-      }
-    }
-  } else {
-    console.error("Location ID not found.", location, inventory_item_id);
-  }
-}
-// Define this function to retrieve the location ID by name
+// Function to retrieve location ID by name
 async function getLocationIdByName(session, locationName) {
   try {
     const locations = await shopify.api.rest.Location.all({ session });
-    // Find the location by name
-    const locationByName = locations.find((loc) => loc.name === locationName);
-    return locationByName;
+    const location = locations.find((loc) => loc.name === locationName);
+    return location || null;
   } catch (error) {
-    console.error("Error retrieving locations:", error);
-    throw error; // Propagate the error up for better error handling
+    console.error("Error retrieving location:", error);
+    throw error;
   }
+}
+
+// Function to update product location
+async function updateProductLocation(session, inventoryItemId, locationId) {
+  try {
+    const inventoryLevel = new shopify.api.rest.InventoryLevel({ session });
+
+    // Set inventory level at the specified location
+    await inventoryLevel.set({
+      body: {
+        location_id: locationId,
+        inventory_item_id: inventoryItemId,
+        available: 1,
+      },
+    });
+
+    console.log(
+      `Inventory item ${inventoryItemId} updated to location ${locationId}`
+    );
+  } catch (error) {
+    if (error.code === 429) {
+      console.warn("Rate limit exceeded, retrying...");
+      const retryAfter = parseInt(
+        error.response.headers["retry-after"] || 1000
+      );
+      await delay(retryAfter);
+      await updateProductLocation(session, inventoryItemId, locationId);
+    } else {
+      console.error(
+        `Error updating inventory item ${inventoryItemId} to location ${locationId}:`,
+        error
+      );
+    }
+  }
+}
+
+// Helper function for delay
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

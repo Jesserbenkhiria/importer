@@ -70,11 +70,11 @@ export const updateLastWeekOrdersTags = async () => {
   
         if (idsCUInOrder.length > 0) {
           console.log("Posting data to TrovaUsati for CU products:", idsCUInOrder);
-          await postDataTrovaUsati(idsCUInOrder, "CU");
+          // await postDataTrovaUsati(idsCUInOrder, "CU");
         }
         if (idsISTInOrder.length > 0) {
           console.log("Posting data to TrovaUsati for IST products:", idsISTInOrder);
-          await postDataTrovaUsati(idsISTInOrder, "IST");
+          // await postDataTrovaUsati(idsISTInOrder, "IST");
         }
 
         let orderTags = "";
@@ -110,6 +110,7 @@ export const updateLastWeekOrdersTags = async () => {
 
 
 export default async function autoImport() {
+  
   const time = new Date();
   console.log(time.toLocaleString());
   try {

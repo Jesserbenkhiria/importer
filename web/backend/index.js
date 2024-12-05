@@ -18,9 +18,9 @@ const STATIC_PATH =
 
 const app = express();
 autoImport();
-updateLastWeekOrdersTags()
-app.use(shopifyRouter)
-app.use(privateRouter)
+updateLastWeekOrdersTags();
+app.use(shopifyRouter);
+app.use(privateRouter);
 
 app.use(serveStatic(STATIC_PATH, { index: false }));
 

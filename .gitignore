@@ -26,8 +26,11 @@ extensions/*/build
 
 # Node library SQLite database
 web/database.sqlite
+
 uploads
 shopify.app.toml
 web/valutazione.sql
 shopify.app.toml
 /web/backend/prisma/migrations
+/web/backend/service/utils/ImportingHistory
+/web/backend/service/utils/app.log
