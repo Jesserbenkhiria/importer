@@ -89,11 +89,11 @@ const webhooks = {
         let trovausatiCall = {};
         if (idsCUInOrder.length > 0) {
           console.log("Posting data to TrovaUsati for CU products:", idsCUInOrder);
-          // trovausatiCall = await postDataTrovaUsati(idsCUInOrder, "CU");
+          trovausatiCall = await postDataTrovaUsati(idsCUInOrder, "CU");
         }
         if (idsISTInOrder.length > 0) {
           console.log("Posting data to TrovaUsati for IST products:", idsISTInOrder);
-          // trovausatiCall = await postDataTrovaUsati(idsISTInOrder, "IST");
+          trovausatiCall = await postDataTrovaUsati(idsISTInOrder, "IST");
         }
         // console.log("trovaUsatiCall :", trovausatiCall);
   

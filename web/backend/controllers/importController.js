@@ -138,11 +138,11 @@ const importController = {
        
           if (idsCUInOrder.length > 0) {
             console.log("Posting data to TrovaUsati for CU products:", idsCUInOrder);
-            // await postDataTrovaUsati(idsCUInOrder, "CU");
+            await postDataTrovaUsati(idsCUInOrder, "CU");
           }
           if (idsISTInOrder.length > 0) {
             console.log("Posting data to TrovaUsati for IST products:", idsISTInOrder);
-            //  await postDataTrovaUsati(idsISTInOrder, "IST");
+             await postDataTrovaUsati(idsISTInOrder, "IST");
           }
      
           

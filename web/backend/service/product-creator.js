@@ -73,7 +73,7 @@ async function updateAllProducts(session) {
       }
 
       // Introduce a delay between each call (e.g., 1 second)
-      await delay(1000); // Delay of 1000ms (1 second)
+      await delay(500); // Delay of 1000ms (1 second)
     }
   } catch (error) {
     console.log("Error while updating products:", error);
