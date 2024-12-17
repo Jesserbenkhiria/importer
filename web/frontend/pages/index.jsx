@@ -1,16 +1,12 @@
 import React, { useState } from "react";
-import {
-  Page,
-  Layout,
-  Navigation,
-  Frame,
-  TopBar,
-  Card,
-  TextContainer,
-  Heading,
-} from "@shopify/polaris";
-import { HomeMajor, ProductsMajor, OrdersMajor } from "@shopify/polaris-icons";
+import { Frame, Page, Icon } from "@shopify/polaris";
+import { HomeMajor, ProductsMajor, BarcodeMajor } from "@shopify/polaris-icons";
 import { ProductsCard } from "../components";
+import ProductsList from "../components/ProductsList";
+import Barcode from "../components/Barcode";
+import ImportConfigPage from "../components/FilesPage";
+import "./App.css";
+import logo from "../assets/images.png";
 
 export default function App() {
   const [selectedPage, setSelectedPage] = useState("home");
@@ -23,55 +19,75 @@ export default function App() {
     switch (selectedPage) {
       case "home":
         return <ProductsCard />;
-      case "products":
-        return (
-          <Card sectioned>
-            <Heading>Products Page</Heading>
-            <TextContainer>Manage your products here.</TextContainer>
-          </Card>
-        );
-      case "orders":
-        return (
-          <Card sectioned>
-            <Heading>Orders Page</Heading>
-            <TextContainer>View and manage your orders here.</TextContainer>
-          </Card>
-        );
+      case "Products":
+        return <ProductsList />;
+      case "filter":
+        return <ImportConfigPage />;
+      case "barcodes":
+        return <Barcode />;
       default:
         return null;
     }
   };
 
   return (
-    <Frame 
-      navigation={
-        <Navigation location="/">
-          <Navigation.Section 
-            items={[
-              {
-                label: "Home",
-                icon: HomeMajor,
-                selected: selectedPage === "home",
-                onClick: () => handleNavigation("home"),
-              },
-              {
-                label: "Products",
-                icon: ProductsMajor,
-                selected: selectedPage === "products",
-                onClick: () => handleNavigation("products"),
-              },
-              {
-                label: "Orders",
-                icon: OrdersMajor,
-                selected: selectedPage === "orders",
-                onClick: () => handleNavigation("orders"),
-              },
-            ]}
-          />
-        </Navigation>
-      }
-    >
-      <Page>{renderContent()}</Page>
-    </Frame>
+    <div className="app-container">
+      {/* Sidebar Navigation */}
+      <nav className="navbar">
+        <img
+          src={logo}
+          alt=""
+          style={{ width: "150px", height: "100px", objectFit: "contain" }}
+        />
+
+        <ul>
+          <li
+            className={selectedPage === "home" ? "selected" : ""}
+            onClick={() => handleNavigation("home")}
+          >
+            <span className="nav-item">
+              <Icon source={HomeMajor} color="base" />
+              <span className="nav-label">Home</span>
+            </span>
+          </li>
+          <li
+            className={selectedPage === "Products" ? "selected" : ""}
+            onClick={() => handleNavigation("Products")}
+          >
+            <span className="nav-item">
+              <Icon source={ProductsMajor} color="base" />
+              <span className="nav-label">Products</span>
+            </span>
+          </li>
+          <li
+            className={selectedPage === "barcodes" ? "selected" : ""}
+            onClick={() => handleNavigation("barcodes")}
+          >
+            <span className="nav-item">
+              <Icon source={BarcodeMajor} color="base" />
+              <span className="nav-label">Barcodes</span>
+            </span>
+          </li>
+          <li
+            className={selectedPage === "filter" ? "selected" : ""}
+            onClick={() => handleNavigation("filter")}
+          >
+            <span className="nav-item">
+              <Icon source={BarcodeMajor} color="base" />
+              <span className="nav-label">Filters</span>
+            </span>
+          </li>
+        </ul>
+      </nav>
+
+      {/* Main Content */}
+      <main className="main-content">
+        <Frame>
+          <Page fullWidth title={selectedPage}>
+            {renderContent()}
+          </Page>
+        </Frame>
+      </main>
+    </div>
   );
 }

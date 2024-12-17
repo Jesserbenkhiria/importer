@@ -30,6 +30,7 @@ export const handleGtin = async (title, color) => {
       return existingRecord.variantBarcode || "null";
     } else {
       // If not found, create a new record with null barcode
+      
       await prisma.gtin.create({
         data: {
           handle: handle,
@@ -37,6 +38,7 @@ export const handleGtin = async (title, color) => {
           variantBarcode: null
         }
       });
+      console.log('new gtin created')
       return "null"; // Return "null" as a string
     }
   } catch (error) {

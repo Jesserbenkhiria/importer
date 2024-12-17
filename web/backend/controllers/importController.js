@@ -8,8 +8,9 @@
 
 import shopify from "../service/shopify.js";
 import productCreator from "../service/product-creator.js";
-import amazonProducts from "../service/amazonImporter.js";
+import amazonProducts from "./amazonImporter.js";
 import postDataTrovaUsati from "../service/utils/travosatiSelledProduct.js";
+import { updateBareCodes } from "./updateProductsBareCode.js";
 
 const importController = {
   countproduct: async (_req, res) => {
@@ -29,7 +30,7 @@ const importController = {
         );
       } while (shopify.api.rest.Product.NEXT_PAGE_INFO);
       let product = articles.flat(1);
-      
+
       for (let i = 0; i < product.length; i++) {
         if (product[i].status === "active") {
           if (product[i].tags.includes("ImportatiCU")) {
@@ -52,11 +53,11 @@ const importController = {
           */
         }
       }
-      console.log("count ist ",countIst);
-      console.log("count CU ",countIvan);
-      console.log("count AZ ",ImportAZ);
-      
-      let result = { count: countIst, countIvan: countIvan ,ImportAZ};
+      console.log("count ist ", countIst);
+      console.log("count CU ", countIvan);
+      console.log("count AZ ", ImportAZ);
+
+      let result = { count: countIst, countIvan: countIvan, ImportAZ };
       res.status(200).send(result);
     } catch (error) {
       let result = {};
@@ -81,7 +82,7 @@ const importController = {
     let error = null;
     try {
       let session = res.locals.shopify.session;
-     
+
       // Calculate the date range for the last week
       const today = new Date();
       const lastWeek = new Date(today);
@@ -98,7 +99,6 @@ const importController = {
         created_at_max: today.toISOString(),
         status: "any", // to include all orders
       });
-     
 
       console.log(`Fetched ${orders.length} orders`);
 
@@ -120,7 +120,7 @@ const importController = {
             if (product.tags.includes("ImportatiCU")) {
               const idTrovaUsati = product.tags.split("{")[1].split("}")[0];
               idsCUInOrder.push(idTrovaUsati);
-              
+
               nbrCU++;
             }
             if (product.tags.includes("ImportatiIST")) {
@@ -134,18 +134,22 @@ const importController = {
               `Product ID: ${product.id}, CU Count: ${nbrCU}, IST Count: ${nbrIST}`
             );
           }
-    
-       
+
           if (idsCUInOrder.length > 0) {
-            console.log("Posting data to TrovaUsati for CU products:", idsCUInOrder);
+            console.log(
+              "Posting data to TrovaUsati for CU products:",
+              idsCUInOrder
+            );
             await postDataTrovaUsati(idsCUInOrder, "CU");
           }
           if (idsISTInOrder.length > 0) {
-            console.log("Posting data to TrovaUsati for IST products:", idsISTInOrder);
-             await postDataTrovaUsati(idsISTInOrder, "IST");
+            console.log(
+              "Posting data to TrovaUsati for IST products:",
+              idsISTInOrder
+            );
+            await postDataTrovaUsati(idsISTInOrder, "IST");
           }
-     
-          
+
           let orderTags = "";
           if (nbrIST !== 0 && nbrCU !== 0) {
             orderTags = "IST, CU";
@@ -167,9 +171,9 @@ const importController = {
           console.log(`Order ID: ${order.id} already has tags: ${order.tags}`);
         }
       }
-     const resss =  await productCreator(session);
-     console.log(resss);
-     
+      const resss = await productCreator(session);
+      console.log(resss);
+
       res.status(200).send({ success: true });
     } catch (e) {
       console.log(`Failed to process orders/last-week: ${e.message}`);
@@ -181,13 +185,35 @@ const importController = {
   getAmazonProducts: async (_req, res) => {
     try {
       const products = await amazonProducts(res.locals.shopify.session);
-      console.log(products);
-
       res.status(200).json({ data: products });
     } catch (error) {
       console.log(error);
     }
   },
+  getAllProducts: async (_req, res) => {
+    console.log("get all products",res.locals.shopify.session);
+    const session = res.locals.shopify.session;
+    let articles = [];
+    do {
+      articles.push(
+        await shopify.api.rest.Product.all({
+          session,
+          ...shopify.api.rest.Product.NEXT_PAGE_INFO?.query,
+          limit: 250,
+        })
+      );
+    } while (shopify.api.rest.Product.NEXT_PAGE_INFO);
+    res.json(articles.flat(1));
+  },
+  updateAllBareCodes: async (_req, res) => {
+    try {
+      const products = await updateBareCodes(res.locals.shopify.session);
+      res.status(200).json({ message:"done" });
+    } catch (error) {
+      res.status(400).json({ message:error });
+
+    }
+  }
 };
 
 export default importController;

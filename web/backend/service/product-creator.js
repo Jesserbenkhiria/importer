@@ -1,8 +1,9 @@
 import shopify from "./shopify.js";
+import { handleGtin } from "./utils/gtinRepository.js";
 import fetch from "node-fetch";
 import { exportProductsToCSV } from "./utils/ExportProducts.js";
 import logger from "./utils/logger.js";
-import { handleGtin } from "./utils/gtinRepository.js";
+
 // import { handleGtin } from "./utils/gtinRepository.js";
 
 export default async function productCreator(session) {

@@ -1,4 +1,4 @@
-import shopify from "./shopify.js";
+import shopify from "../service/shopify.js";
 
 // Update products with the "ImportAZ" tag to set their location
 export default async function amazonProducts(session) {
@@ -61,21 +61,38 @@ async function getLocationIdByName(session, locationName) {
 }
 
 // Function to update product location
-async function updateProductLocation(session, inventoryItemId, locationId) {
+async function updateProductLocation(session, inventoryItemId, newLocationId) {
   try {
-    const inventoryLevel = new shopify.api.rest.InventoryLevel({ session });
+    // Fetch all current locations of the inventory item
+    const inventoryLevels = await shopify.api.rest.InventoryLevel.all({
+      session,
+      inventory_item_ids: inventoryItemId,
+    });
 
-    // Set inventory level at the specified location
-    await inventoryLevel.set({
+    // Remove inventory from all current locations
+    for (const inventoryLevel of inventoryLevels) {
+      if (inventoryLevel.location_id !== newLocationId) {
+        await new shopify.api.rest.InventoryLevel({ session }).delete({
+          location_id: inventoryLevel.location_id,
+          inventory_item_id: inventoryItemId,
+        });
+        console.log(
+          `Removed inventory item ${inventoryItemId} from location ${inventoryLevel.location_id}`
+        );
+      }
+    }
+
+    // Set inventory level at the new location
+    await new shopify.api.rest.InventoryLevel({ session }).set({
       body: {
-        location_id: locationId,
+        location_id: newLocationId,
         inventory_item_id: inventoryItemId,
         available: 1,
       },
     });
 
     console.log(
-      `Inventory item ${inventoryItemId} updated to location ${locationId}`
+      `Inventory item ${inventoryItemId} updated to new location ${newLocationId}`
     );
   } catch (error) {
     if (error.code === 429) {
@@ -84,10 +101,10 @@ async function updateProductLocation(session, inventoryItemId, locationId) {
         error.response.headers["retry-after"] || 1000
       );
       await delay(retryAfter);
-      await updateProductLocation(session, inventoryItemId, locationId);
+      await updateProductLocation(session, inventoryItemId, newLocationId);
     } else {
       console.error(
-        `Error updating inventory item ${inventoryItemId} to location ${locationId}:`,
+        `Error updating inventory item ${inventoryItemId} to location ${newLocationId}:`,
         error
       );
     }

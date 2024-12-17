@@ -1,0 +1,107 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  font-family: "Arial", sans-serif; /* Updated font for better readability */
+}
+
+.navbar {
+  width: 240px;
+  background-color: #222327; /* Darker navbar background */
+  padding: 1.5rem;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content in the sidebar */
+}
+
+.navbar img {
+  margin-bottom: 1.5rem;
+}
+
+.navbar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%; /* Make the list items span full width */
+}
+
+.navbar li {
+  margin-bottom: 1rem;
+  cursor: pointer;
+  padding: 0.8rem 1.2rem; /* More padding for clickable area */
+  color: #dfe3e8;
+  border-radius: 8px; /* Smooth corners for list items */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  display: flex;
+  align-items: center; /* Align items vertically */
+}
+
+.navbar li:hover {
+  background-color: #34373d; /* Slightly brighter hover background */
+  color: #ffffff;
+  transform: scale(1.02); /* Subtle zoom effect on hover */
+}
+
+.navbar li.selected {
+  background-color: #56575b; /* Brighter background for selected item */
+  color: #ffffff;
+  font-weight: bold; /* Highlight the selected text */
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2); /* Inner shadow for depth */
+}
+
+.nav-item {
+  display: flex;
+  gap: 12px; /* Spacing between icon and label */
+  align-items: center;
+  font-size: 15px; /* Slightly larger text size */
+}
+
+.nav-item svg {
+  margin-right: 12px; /* Increased spacing between icon and label */
+  width: 24px; /* Slightly larger icon size */
+  height: 24px;
+}
+
+.nav-label {
+  color: inherit;
+}
+
+.main-content {
+  flex: 1;
+  background-color: #f7f8fa; /* Light background for contrast */
+  padding: 2rem;
+  overflow-y: auto;
+  border-left: 1px solid #e1e3e6; /* Subtle border between sidebar and main content */
+}
+
+.main-content h1 {
+  font-size: 24px;
+  margin-bottom: 1.5rem;
+  color: #333; /* Darker text for headings */
+}
+
+.main-content p {
+  color: #555; /* Softer text for paragraphs */
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .navbar {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around; /* Horizontal alignment for smaller screens */
+    padding: 1rem;
+  }
+
+  .navbar li {
+    margin-bottom: 0;
+    padding: 0.5rem;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}

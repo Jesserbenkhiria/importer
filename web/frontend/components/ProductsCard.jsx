@@ -17,7 +17,6 @@ export function ProductsCard() {
   const [toastProps, setToastProps] = useState(emptyToastProps);
   const fetch = useAuthenticatedFetch();
 
-
   const {
     data,
     refetch: refetchProductCount,
@@ -31,7 +30,7 @@ export function ProductsCard() {
       },
     },
   });
-  console.log(data);
+
   const toastMarkup = toastProps.content && !isRefetchingCount && (
     <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
   );
@@ -66,6 +65,7 @@ export function ProductsCard() {
       });
     }
   };
+
   const getAmazon = async () => {
     setIsLoading(true);
 
@@ -100,7 +100,19 @@ export function ProductsCard() {
   return (
     <>
       {toastMarkup}
+      {/* Buttons above the card */}
+      <div style={{marginBottom:"20px"}}>
+      <ButtonGroup  >
+        <Button onClick={getAmazon} loading={isLoading}>
+          update Amazon Prodcuts Location
+        </Button>
+        <Button onClick={handleUpdateOrders} loading={isLoading}>
+          Fix Orders Tags 
+        </Button>
+      </ButtonGroup>
+      </div>
       <Card
+        
         title="Aggiorna Catalogo"
         sectioned
         primaryFooterAction={{
@@ -108,20 +120,6 @@ export function ProductsCard() {
           onAction: handlePopulate,
           loading: isLoading,
         }}
-        //  secondaryFooterActions={[
-        //     {
-        //       content: "Aggiorna Ordini",
-        //       onAction: handleUpdateOrders,
-        //       loading: isLoading,
-        //     },
-        //   ]}
-        secondaryFooterActions={[
-          {
-            content: "get Amazon",
-            onAction: getAmazon,
-            loading: isLoading,
-          },
-        ]}
       >
         <TextContainer spacing="loose">
           <p>
@@ -139,7 +137,8 @@ export function ProductsCard() {
             <DisplayText size="medium">
               <TextStyle variation="">
                 Istore : {isLoadingCount ? "-" : data.count} <br></br>
-                Cellulari Usati : {isLoadingCount ? "-" : data.countIvan}<br></br>
+                Cellulari Usati : {isLoadingCount ? "-" : data.countIvan}
+                <br></br>
                 Amazon : {isLoadingCount ? "-" : data.ImportAZ}
               </TextStyle>
             </DisplayText>

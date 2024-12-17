@@ -17,8 +17,10 @@ const STATIC_PATH =
     : `${process.cwd()}/frontend/`;
 
 const app = express();
-autoImport();
-updateLastWeekOrdersTags();
+// autoImport();
+// updateLastWeekOrdersTags();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(shopifyRouter);
 app.use(privateRouter);
 
