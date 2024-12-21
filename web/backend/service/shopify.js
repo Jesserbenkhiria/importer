@@ -1,18 +1,18 @@
-import { config } from 'dotenv';
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { config } from "dotenv";
+import { fileURLToPath } from "url";
+import path from "path";
 
 // Get __dirname equivalent in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load .env file from the parent project directory
-config({ path: path.resolve(__dirname, '../.env') });
+config({ path: path.resolve(__dirname, "../.env") });
 
+import { shopifyApp } from "@shopify/shopify-app-express";
+import { MySQLSessionStorage } from "@shopify/shopify-app-session-storage-mysql";
+import { LATEST_API_VERSION } from "@shopify/shopify-api";
 
-import { shopifyApp } from '@shopify/shopify-app-express';
-import { MySQLSessionStorage } from '@shopify/shopify-app-session-storage-mysql';
-import { LATEST_API_VERSION } from '@shopify/shopify-api';
 // Create MySQL session storage with connection pool limit
 const sessionStorage = new MySQLSessionStorage(
   process.env.DATABASE_URL,
@@ -26,15 +26,25 @@ let { restResources } = await import(
 // Initialize Shopify app
 const shopify = shopifyApp({
   api: {
+    apiKey: process.env.SHOPIFY_API_KEY, // Chiave API dal file .env
+    apiSecretKey: process.env.SHOPIFY_CLIENT_SECRET, // Chiave segreta API dal file .env
+    hostName: process.env.SHOPIFY_HOST_NAME, // Nome host dal file .env
+    apiVersion: LATEST_API_VERSION,
     restResources,
-    // Adjust as per your Shopify API version requirements
+    future: {
+      customerAddressDefaultFix: true,
+      lineItemBilling: true,
+      unstable_managedPricingSupport: true,
+    },
+    billing: undefined, // Configura la fatturazione se necessario
+    scopes: process.env.SHOPIFY_SCOPES.split(","), // Converte l'array di scope dal .env in JSON
   },
   auth: {
-    path: '/api/auth',
-    callbackPath: '/api/auth/callback',
+    path: "/api/auth",
+    callbackPath: "/api/auth/callback",
   },
   webhooks: {
-    path: '/api/webhooks',
+    path: "/api/webhooks",
   },
   sessionStorage, // Use the MySQL session storage
 });
